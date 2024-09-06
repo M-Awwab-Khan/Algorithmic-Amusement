@@ -8,19 +8,27 @@ private:
     int rows;
     int cols;
 
-public:
-    Matrix(int r, int c) : rows(r), cols(c) {
+    void allocateMemory() {
         matrix = new int*[rows];
         for (int i = 0; i < rows; ++i) {
             matrix[i] = new int[cols] {};
         }
     }
 
-    Matrix(const Matrix &other) : rows(other.rows), cols(other.cols) {
-        matrix = new int*[rows];
+    void deallocateMemory() {
         for (int i = 0; i < rows; ++i) {
-            matrix[i] = new int[cols] {};
+            delete[] matrix[i];
         }
+        delete[] matrix;
+    }
+
+public:
+    Matrix(int r, int c) : rows(r), cols(c) {
+        allocateMemory();
+    }
+
+    Matrix(const Matrix &other) : rows(other.rows), cols(other.cols) {
+        allocateMemory();
         for (int i = 0; i < rows; ++i) {
             for (int j = 0; j < cols; ++j) {
                 matrix[i][j] = other.matrix[i][j];
@@ -28,11 +36,25 @@ public:
         }
     }
 
-    ~Matrix() {
-        for (int i = 0; i < rows; ++i) {
-            delete[] matrix[i];
+    Matrix& operator=(const Matrix &other) {
+        if (this != &other) {
+            deallocateMemory();
+
+            rows = other.rows;
+            cols = other.cols;
+            allocateMemory();
+
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < cols; ++j) {
+                    matrix[i][j] = other.matrix[i][j];
+                }
+            }
         }
-        delete[] matrix;
+        return *this;
+    }
+
+    ~Matrix() {
+        deallocateMemory();
     }
 
     void inputMatrix() {
@@ -90,6 +112,7 @@ public:
         Matrix temp(rows, other.cols);
         for (int i = 0; i < rows; ++i) {
             for (int j = 0; j < other.cols; ++j) {
+                temp.matrix[i][j] = 0; // Initialize to zero
                 for (int k = 0; k < cols; ++k) {
                     temp.matrix[i][j] += matrix[i][k] * other.matrix[k][j];
                 }
@@ -134,24 +157,19 @@ int main() {
         mat2.display();
 
         cout << "Mat1 + Mat2:" << endl;
-        Matrix sum(mat1 + mat2);
-        sum.display();
-
-        cout << "Mat1 x Mat2:" << endl;
-        Matrix mult(mat1 * mat2);
-        mult.display();
+        (mat1 + mat2).display();
 
         cout << "Mat1 - Mat2:" << endl;
-        Matrix sub(mat1 - mat2);
-        sub.display();
+        (mat1 - mat2).display();
+
+        cout << "Mat1 x Mat2:" << endl;
+        (mat1 * mat2).display();
 
         cout << "Mat1 Transposed:" << endl;
-        Matrix transpose(~mat1);
-        transpose.display();
+        (~mat1).display();
 
         cout << "3 * Mat1:" << endl;
-        Matrix multc(mat1 * 3);
-        multc.display();
+        (mat1 * 3).display();
 
     } catch (const runtime_error &e) {
         cout << e.what() << endl;
